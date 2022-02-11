@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body>
+   <script src="tmi.min.js"></script>
+
+<script>
+   const client = new tmi.Client(
+      {
+         options: { debug: true, messagesLogLevel: "info" },
+         connection: {
+            reconnect: true,
+            secure: true
+         },
+         identity: {
+            username: 'Aqueuse',
+            password: 'oauth:secret'
+         },
+         channels: [ 'Aqueuse' ]
+      }
+   );
+   client.connect().catch(console.error);
+   client.on('message', (channel, tags, message, self) => {
+      if (tags.emotes !== null) {
+         let position_tmp = [];
+         for (const [key, position_array] of Object.entries(tags.emotes)) {
+            for (const index in position_array) {
+               splited = position_array[index].split("-");
+               position_tmp.push( [key, parseInt(splited[0]), parseInt(splited[1])+1] );
+            }
+         }
+         position_tmp.sort((a, b) => (a[1] > b[1]) ? 1 : -1);
+
+         let result_string = "";
+         let last_index = 0;
+         for (const index in position_tmp) {
+            result_string+= message.slice(last_index, position_tmp[index][1]);
+            result_string+= "<img src='https://static-cdn.jtvnw.net/emoticons/v1/"+position_tmp[index][0]+"/2.0'>";
+            last_index = position_tmp[index][2];
+         }
+         result_string += message.slice(last_index);
+         document.getElementById("chat_message").innerHTML = result_string;
+      }
+      else {
+         document.getElementById("chat_message").innerHTML = message;
+      }
+   });
+
+</script>
+
+<p>Hello chat</p>
+<p id="chat_message"></p>
+
+</body>
+</html>
